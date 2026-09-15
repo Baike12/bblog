@@ -4,7 +4,9 @@ _references/
 
 # 构建产物
 dist/
-internal/web/dist/
+# 前端产物不入库，但保留占位文件让 //go:embed all:dist 在没有构建产物时也能编译
+internal/web/dist/*
+!internal/web/dist/.gitkeep
 web/node_modules/
 node_modules/
 

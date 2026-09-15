@@ -81,17 +81,19 @@ docker buildx build --platform "${PLATFORM}" -f deploy/Dockerfile \
 IMAGE_BYTES="$(docker image inspect "${IMAGE}" --format '{{.Size}}')"
 echo "    镜像体积: $(( IMAGE_BYTES / 1024 / 1024 )) MB (${IMAGE_BYTES} 字节)"
 
-echo ">>> [5/8] 传输到 ${SERVER_HOST} 并加载（流式，不落中间文件）"
-started=$(date +%s)
-docker save "${IMAGE}" | gzip -6 | ssh "${SERVER_HOST}" 'gunzip | docker load'
-echo "    传输+加载耗时: $(( $(date +%s) - started ))s"
-
-echo ">>> [6/8] 服务器初始化（幂等）"
+echo ">>> [5/8] 服务器初始化（安装 Docker、建目录、配置 nginx，幂等）"
 ssh "${SERVER_HOST}" "mkdir -p /opt/bblog/deploy"
 rsync -az -e ssh deploy/ "${SERVER_HOST}:/opt/bblog/deploy/"
 rsync -az -e ssh bblog.yaml "${SERVER_HOST}:/opt/bblog/deploy/bblog.yaml"
 rsync -az --ignore-existing -e ssh bblog.yaml "${SERVER_HOST}:/opt/bblog/bblog.yaml"
 ssh "${SERVER_HOST}" 'bash /opt/bblog/deploy/server_setup.sh'
+
+echo ">>> [6/8] 传输到 ${SERVER_HOST} 并加载（流式，不落中间文件）"
+# 两个标签一起保存：docker save 只导出被点名的标签，
+# 只写 ${IMAGE} 会让服务器上没有 bblog:latest，与本地状态不一致。
+started=$(date +%s)
+docker save "${IMAGE}" bblog:latest | gzip -6 | ssh "${SERVER_HOST}" 'gunzip | docker load'
+echo "    传输+加载耗时: $(( $(date +%s) - started ))s"
 
 echo ">>> [7/8] 启动容器"
 ssh "${SERVER_HOST}" "TAG=${TAG} bash -s" < deploy/remote_run.sh

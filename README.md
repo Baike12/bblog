@@ -133,7 +133,7 @@ scripts/deploy.sh --rollback 20260915-1430   # 回滚到指定标签
 服务器实测访问不了 Docker Hub（`registry-1.docker.io` 超时），而本机可达，因此流程是：
 
 1. 本机 `docker buildx build --platform linux/amd64` 构建镜像（本机是 arm64，必须显式指定平台，否则服务器启动报 `exec format error`）；
-2. `docker save | gzip -6 | ssh root@服务器 'gunzip | docker load'` 流式传输，不落中间文件；
+2. `docker save ${IMAGE} bblog:latest | gzip -6 | ssh root@服务器 'gunzip | docker load'` 流式传输，不落中间文件。两个标签必须一起点名：`docker save` 只导出被指定的标签，只写 `${IMAGE}` 会让服务器上没有 `bblog:latest`，与本地状态不一致；
 3. 服务器只做 `docker load`，不执行任何 `docker pull`，因此不需要配置镜像加速器。
 
 镜像里只有 alpine 基础层与一个静态 Go 二进制（前端产物、KaTeX、chroma 样式都已 `go:embed`），不含 Go 工具链与 Node。
@@ -153,6 +153,24 @@ scripts/deploy.sh --rollback 20260915-1430   # 回滚到指定标签
 5. `nginx -t` 校验后 `systemctl reload nginx`。
 
 不新建独立 server 块的原因：现有 iteach 站点是 `server_name _` 的 catch-all，再加一个 catch-all 会冲突。
+
+### 部署验收
+
+2026-09-15 首次部署的实测结果（`scripts/deploy.sh` 全流程 exit 0，耗时约 30s，其中传输+加载 16s）：
+
+| 检查项 | 命令 | 实测结果 |
+|---|---|---|
+| 镜像架构 | `docker inspect bblog:latest --format '{{.Architecture}}'` | `amd64`（`Os` 为 `linux`） |
+| 部署的二进制与本机一致 | 比对 `sha256sum /app/bblog` 与 `dist/bblog-linux-amd64` | 均为 `604ae367234472c62751b4c881d3d12a602aa642fac813439f1d51325480ed9e` |
+| 端口未对外暴露 | `ss -lntp \| grep 8090` | 仅 `127.0.0.1:8090`（docker-proxy） |
+| 容器自愈 | `docker inspect bblog --format '{{.HostConfig.RestartPolicy.Name}}'` | `unless-stopped`，容器报告 `healthy` |
+| 挂载 | `docker inspect bblog --format '{{range .Mounts}}...'` | `content`/`data` 读写、`bblog.yaml` 只读 |
+| 健康检查 | `curl http://101.96.243.197/blog/healthz` | 200，`posts:5 published:3 pages:1 parse_errors:0` |
+| 未破坏既有站点 | `curl http://101.96.243.197/` | 200（iteach 页面） |
+| 镜像体积 | `docker image inspect bblog:latest --format '{{.Size}}'` | 41,658,380 字节（39 MB），gzip 后 15,445,756 字节 |
+| 服务器磁盘 | `df -h /` | 40G 中已用 4.9G，可用 33G |
+
+服务器上保留 `bblog:latest` 加最近 3 个带时间戳的标签（`deploy/remote_run.sh` 里的保留逻辑按创建时间倒序删掉第 4 个之后的时间戳标签），用于 `--rollback`。`deploy/server_setup.sh` 重复执行时跳过已装好的 Docker、保留既有 `bblog.yaml` 与 `.env`、跳过已插入的 nginx include。
 
 ## 配置
 
@@ -202,4 +220,4 @@ giscus:
 - 中文搜索不做分词，只做子串匹配：`部署镜像` 能命中，`镜像 部署` 不能命中。
 - 私密文章只保证"不进列表、不被收录"，知道直链即可访问；需要口令保护要另行实现。
 - 未构建前端时（全新克隆直接 `go build`），SPA 页面会显示编译期兜底页；文章页、RSS 与 API 不受影响。
-- 构建前端会覆盖 `internal/web/dist/`（该目录不入库，仓库只保留 `dist/.gitkeep`）。
+- `internal/web/dist/` 不入库，仓库只保留 `dist/.gitkeep`。构建前会清空该目录的产物但保留 `.gitkeep`（`web/scripts/clean-dist.mjs`），因此 vite 的 `emptyOutDir` 是关闭的。
