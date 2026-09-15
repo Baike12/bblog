@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>前端未构建</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; max-width: 40rem; margin: 4rem auto; padding: 0 1rem; line-height: 1.7; }
+  code { background: #f2f2f2; padding: 0.1rem 0.35rem; border-radius: 4px; }
+  pre { background: #f6f8fa; padding: 0.75rem 1rem; border-radius: 6px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>前端产物缺失</h1>
+<p>这是编译期兜底页：后端二进制里没有嵌入已构建的前端资源，因此 SPA 页面无法渲染。</p>
+<p>文章页、RSS 与 API 由后端直出，不受影响。执行以下命令后重新编译后端即可恢复前端页面：</p>
+<pre><code>scripts/build.sh</code></pre>
+</body>
+</html>

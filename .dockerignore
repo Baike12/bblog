@@ -1,0 +1,10 @@
+# 构建上下文必须排除，否则 3.3G 参考项目会被打进构建上下文
+_references/
+web/node_modules/
+node_modules/
+.git/
+data/
+.secrets/
+dist/*.tar.gz
+*.log
+.DS_Store

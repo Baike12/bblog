@@ -1,0 +1,26 @@
+site:
+  title: 我的博客
+  author: Baike
+  description: 记录技术与部署的博客
+  base_url: http://101.96.243.197
+  base_path: /blog
+  language: zh-CN
+
+server:
+  listen: 0.0.0.0:8090
+
+content:
+  # 相对路径以本配置文件所在目录为基准：
+  # 本机运行 → <repo>/content；容器内配置在 /app/bblog.yaml → /app/content
+  dir: content
+
+data:
+  dir: data
+
+giscus:
+  repo: Baike12/bblog
+  repo_id: R_kgDOUcDEAA
+  category: Announcements
+  category_id: DIC_kwDOUcDEAM4DFqu7
+  mapping: pathname
+  lang: zh-CN

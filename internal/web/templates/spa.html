@@ -1,0 +1,76 @@
+{{define "spa"}}<!doctype html>
+<html lang="{{.Site.Language}}" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}}</title>
+<meta name="description" content="{{.Site.Description}}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{.Site.Title}}">
+<meta property="og:description" content="{{.Site.Description}}">
+<meta property="og:site_name" content="{{.Site.Title}}">
+<link rel="alternate" type="application/rss+xml" title="{{.Site.Title}}" href="{{.Site.BasePath}}/rss.xml">
+<link rel="stylesheet" href="{{.Site.BasePath}}{{.Assets.Style}}">
+<script>
+(function () {
+  var theme = 'light';
+  try {
+    theme = localStorage.getItem('bblog-theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  } catch (e) {}
+  document.documentElement.setAttribute('data-theme', theme);
+  window.__bblogTheme = theme;
+})();
+</script>
+</head>
+<body>
+<div id="root">
+  <!-- 预渲染骨架：不执行 JS 的爬虫能读到导航与最近文章链接，React 首次渲染会整体替换它 -->
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="site-title" href="{{.Site.BasePath}}/">{{.Site.Title}}</a>
+      <nav class="site-nav">
+        <a href="{{.Site.BasePath}}/tags/">标签</a>
+        <a href="{{.Site.BasePath}}/archive/">归档</a>
+        <a href="{{.Site.BasePath}}/search/">搜索</a>
+        {{range .Nav}}<a href="{{.URL}}">{{.Title}}</a>{{end}}
+        <button type="button" class="theme-toggle" data-theme-toggle aria-label="切换深浅色">◐</button>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <ul class="post-list">
+      {{range .Skeleton}}
+      <li class="post-item">
+        <a class="post-item-title" href="{{.URL}}">{{.Title}}</a>
+        <p class="post-item-meta"><time datetime="{{.Date}}">{{.DateText}}</time></p>
+        <p class="post-item-summary">{{.Summary}}</p>
+      </li>
+      {{end}}
+    </ul>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>© {{.Site.Author}} · <a href="{{.Site.BasePath}}/rss.xml">RSS</a></p>
+    </div>
+  </footer>
+</div>
+<script id="bblog-data" type="application/json">{{.Bootstrap}}</script>
+<script type="module" src="{{.Site.BasePath}}{{.Assets.Script}}"></script>
+<script>
+(function () {
+  var root = document.documentElement;
+  function apply(theme) {
+    root.setAttribute('data-theme', theme);
+    window.__bblogTheme = theme;
+    try { localStorage.setItem('bblog-theme', theme); } catch (e) {}
+  }
+  document.addEventListener('click', function (event) {
+    var button = event.target.closest('[data-theme-toggle]');
+    if (!button) return;
+    apply(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+})();
+</script>
+</body>
+</html>{{end}}

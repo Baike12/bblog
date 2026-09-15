@@ -1,0 +1,9 @@
+{{define "content"}}
+<article class="post page-content">
+  <header class="post-header">
+    <h1 class="post-title">{{.Page.Title}}</h1>
+    {{if .Page.UpdatedTx}}<p class="post-meta">更新于 <time datetime="{{.Page.Updated}}">{{.Page.UpdatedTx}}</time></p>{{end}}
+  </header>
+  <div class="post-body">{{.Page.Body}}</div>
+</article>
+{{end}}

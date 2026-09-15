@@ -1,0 +1,77 @@
+{{define "layout"}}<!doctype html>
+<html lang="{{.Site.Language}}" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}}</title>
+{{if .Description}}<meta name="description" content="{{.Description}}">{{end}}
+{{if .NoIndex}}<meta name="robots" content="noindex, nofollow">{{end}}
+{{if .Canonical}}<link rel="canonical" href="{{.Canonical}}">{{end}}
+<meta property="og:type" content="{{.OGType}}">
+<meta property="og:title" content="{{.Title}}">
+{{if .Description}}<meta property="og:description" content="{{.Description}}">{{end}}
+{{if .Canonical}}<meta property="og:url" content="{{.Canonical}}">{{end}}
+<meta property="og:site_name" content="{{.Site.Title}}">
+<link rel="alternate" type="application/rss+xml" title="{{.Site.Title}}" href="{{.Site.BasePath}}/rss.xml">
+<link rel="stylesheet" href="{{.Site.BasePath}}{{.Assets.Style}}">
+<link rel="stylesheet" href="{{.Site.BasePath}}/assets/chroma/chroma.css">
+{{if .HasMath}}<link rel="stylesheet" href="{{.Site.BasePath}}/assets/katex/katex.min.css">{{end}}
+<script>
+(function () {
+  var theme = 'light';
+  try {
+    theme = localStorage.getItem('bblog-theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  } catch (e) {}
+  document.documentElement.setAttribute('data-theme', theme);
+  window.__bblogTheme = theme;
+})();
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="site-title" href="{{.Site.BasePath}}/">{{.Site.Title}}</a>
+    <nav class="site-nav">
+      <a href="{{.Site.BasePath}}/tags/">标签</a>
+      <a href="{{.Site.BasePath}}/archive/">归档</a>
+      <a href="{{.Site.BasePath}}/search/">搜索</a>
+      {{range .Nav}}<a href="{{.URL}}">{{.Title}}</a>{{end}}
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="切换深浅色">◐</button>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+{{template "content" .}}
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <p>© {{.Site.Author}} · <a href="{{.Site.BasePath}}/rss.xml">RSS</a></p>
+  </div>
+</footer>
+<script>
+(function () {
+  var root = document.documentElement;
+  function syncGiscus(theme) {
+    var frame = document.querySelector('iframe.giscus-frame');
+    if (!frame) return;
+    frame.contentWindow.postMessage({
+      giscus: { setConfig: { theme: theme === 'dark' ? 'dark' : 'light' } }
+    }, 'https://giscus.app');
+  }
+  function apply(theme) {
+    root.setAttribute('data-theme', theme);
+    window.__bblogTheme = theme;
+    try { localStorage.setItem('bblog-theme', theme); } catch (e) {}
+    syncGiscus(theme);
+  }
+  document.addEventListener('click', function (event) {
+    var button = event.target.closest('[data-theme-toggle]');
+    if (!button) return;
+    apply(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+  window.addEventListener('load', function () { syncGiscus(root.getAttribute('data-theme')); });
+})();
+</script>
+</body>
+</html>{{end}}

@@ -1,0 +1,22 @@
+<!--
+title: 一篇纯 HTML 文章
+date: 2026-08-20 08:00:00
+tags: [html]
+summary: 这篇内容的正文是原生 HTML，不是 Markdown，用来验证两种格式混排。
+-->
+
+<p>这篇文章的正文直接就是 HTML，渲染管线只做公式回填，不做 Markdown 解析。</p>
+
+<figure>
+  <img src="/blog/media/sample/cover.png" alt="示例配图">
+  <figcaption>配图来自 content/media/sample/cover.png，经 /blog/media/ 路径托管。</figcaption>
+</figure>
+
+<h2 id="custom-anchor">手动指定锚点的小节</h2>
+<p>HTML 文章里的标题锚点由作者自己控制。</p>
+
+<blockquote>
+  <p>原始 HTML 会原样输出，因为写入通道只有 SSH 与 rsync。</p>
+</blockquote>
+
+<p>行内公式同样可用：$\sqrt{a^2+b^2}$。</p>

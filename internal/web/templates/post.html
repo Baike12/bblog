@@ -1,0 +1,49 @@
+{{define "content"}}
+<article class="post">
+  <header class="post-header">
+    <h1 class="post-title">{{.Post.Title}}</h1>
+    <p class="post-meta">
+      <time datetime="{{.Post.Date}}">{{.Post.DateText}}</time>
+      {{if .Post.UpdatedText}} · 更新于 <time datetime="{{.Post.Updated}}">{{.Post.UpdatedText}}</time>{{end}}
+      · 约 {{.Post.ReadingMinutes}} 分钟 · {{.Post.WordCount}} 字
+      {{if .Post.Draft}}<span class="badge">草稿</span>{{end}}
+      {{if .Post.Private}}<span class="badge">私密</span>{{end}}
+    </p>
+    {{if .Post.Tags}}
+    <p class="post-tags">
+      {{range .Post.Tags}}<a href="{{$.Site.BasePath}}/tags/{{.}}/">{{.}}</a>{{end}}
+    </p>
+    {{end}}
+  </header>
+  <div class="post-body">{{.Post.Body}}</div>
+</article>
+
+{{if not .NoIndex}}
+<nav class="post-nav">
+  {{if .Post.Prev}}<a class="post-nav-prev" href="{{.Post.Prev.URL}}">← {{.Post.Prev.Title}}</a>{{else}}<span></span>{{end}}
+  {{if .Post.Next}}<a class="post-nav-next" href="{{.Post.Next.URL}}">{{.Post.Next.Title}} →</a>{{end}}
+</nav>
+{{end}}
+
+{{if .Giscus.RepoID}}
+<section class="comments">
+  <h2>评论</h2>
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+    data-repo="{{.Giscus.Repo}}"
+    data-repo-id="{{.Giscus.RepoID}}"
+    data-category="{{.Giscus.Category}}"
+    data-category-id="{{.Giscus.CategoryID}}"
+    data-mapping="{{.Giscus.Mapping}}"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="{{.Giscus.Lang}}"
+    data-loading="lazy"
+    crossorigin="anonymous"
+    async></script>
+</section>
+{{end}}
+{{end}}
